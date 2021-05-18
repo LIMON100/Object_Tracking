@@ -14,6 +14,8 @@ import time
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
+import os
+import re
 
 import tensorflow as tf
 from yolov3_tf2.models import YoloV3
@@ -44,9 +46,9 @@ metric = nn_matching.NearestNeighborDistanceMetric('cosine', max_cosine_distance
 tracker = Tracker(metric)
 
 
-#vid = cv2.VideoCapture('./data/video/traffic1.mkv')
+vid = cv2.VideoCapture('./data/video/traffic1.mkv')
 #vid = cv2.VideoCapture("video.webm")
-vid = VideoCaptureAsync("video.webm")
+#vid = VideoCaptureAsync("video.webm")
 #vid = vid.start()
 
 
@@ -59,6 +61,10 @@ from _collections import deque
 pts = [deque(maxlen=30) for _ in range(1000)]
 
 counter = []
+
+dir_n = "I:/1.232 Pora/ALL Projects/Line Checker/Try1/Single-Multiple-Custom-Object-Detection-and-Tracking/dataset"
+
+result = []
 
 while True:
     
@@ -113,7 +119,7 @@ while True:
         class_name= track.get_class()
         color = colors[int(track.track_id) % len(colors)]
         color = [i * 255 for i in color]
-
+	
         cv2.rectangle(img, (int(bbox[0]),int(bbox[1])), (int(bbox[2]),int(bbox[3])), color, 2)
         cv2.rectangle(img, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)
                     +len(str(track.track_id)))*17, int(bbox[1])), color, -1)
@@ -133,14 +139,41 @@ while True:
 
 
         height, width, _ = img.shape
-        #cv2.line(img, (0, int(3*height/6+height/20)), (width, int(3*height/6+height/20)), (0, 255, 0), thickness=2)
+        cv2.line(img, (0, int(3*height/6+height/20)), (width, int(3*height/6+height/20)), (0, 255, 0), thickness=2)
         #cv2.line(img, (0, int(3*height/6-height/20)), (width, int(3*height/6-height/20)), (0, 255, 0), thickness=2)
 
         center_y = int(((bbox[1])+(bbox[3]))/2)
 
         if center_y <= int(3*height/6+height/20) and center_y >= int(3*height/6-height/20):
+            
             if class_name == 'car' or class_name == 'truck' or class_name == 'person':
                 counter.append(int(track.track_id))
+                
+                directory = r'dataset'
+                for filename in os.listdir(directory):
+                    if filename.endswith(".jpg") or filename.endswith(".png"):
+                        a1 = os.path.join(directory, filename)
+                        b = int(re.search(r'\d+', a1).group())
+                        result.append(b)
+                    else:
+                        continue
+                    
+                
+                b1 = max(result) + 1
+                count = 0
+
+                while(True):
+                    
+                    count += 1
+                    #count = b1
+                    
+                    cv2.imwrite(dir_n + f"\image{b1}.jpg", img[bbox[1]:bbox[3], bbox[0]:bbox[2])
+		   
+                    #k = cv2.waitKey(10) & 0xff # Press 'ESC' for exiting video
+                    #img_count += 1
+                                
+                    if count > 1:
+                        break
                 #current_count += 1
 
 
@@ -163,5 +196,3 @@ while True:
 vid.release()
 out.release()
 cv2.destroyAllWindows()
-    
-    
