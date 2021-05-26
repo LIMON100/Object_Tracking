@@ -1,4 +1,4 @@
-Down yolov4 weights from ![](https://github.com/LIMON100/Dhaka-AI/blob/master/YoloV5/images/03ccf5d6-a6cd-4352-820e-afc7772a95e1.jpg?raw=true)
+Down yolov4 weights from <a href="https://drive.google.com/file/d/1ySkHYqiW60yzaNe_MfDszCTMAL6qux0E/view?usp=sharing">YOLOV4</a>
 
 run : 
 
