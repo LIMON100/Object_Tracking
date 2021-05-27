@@ -10,7 +10,10 @@ import numpy as np
 import os
 import re
 import matplotlib.pyplot as plt
+import time
 
+from imutils.video import FileVideoStream
+from imutils.video import FPS
 
 def main():
 
@@ -20,7 +23,11 @@ def main():
     with open("./data/labels/coco.names", "r") as f:
         classes = f.read().splitlines()
 
-    cap = cv2.VideoCapture('traffic1.mkv')
+    #cap = cv2.VideoCapture('traffic1.mkv')
+
+    cap = FileVideoStream("traffic1.mkv").start()
+    time.sleep(0.1)
+
     font = cv2.FONT_HERSHEY_PLAIN
     colors = np.random.uniform(0, 255, size = (500, 3))
 
@@ -28,11 +35,14 @@ def main():
     current_count = 0
     result = []
 
-    directory1 = "/home/jfahim-ecl/Downloads/DFTT/Dataset/Wrok/imgzmq/dataset/"
+    directory1 = "/home/ecl/Downloads/Limon/Object_Tracking/imgzmq/dataset/"
     c = 0
 
-    while True:
-        _, img = cap.read()
+    fps = FPS().start()
+
+    while cap.more():
+
+        img = cap.read()
         height, width, _ = img.shape
 
         blob = cv2.dnn.blobFromImage(img, 1/255, (416, 416), (0,0,0), swapRB=True, crop=False)
@@ -45,15 +55,11 @@ def main():
         class_ids = []
 
         for output in layerOutputs:
-            
             for detection in output:
-                
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
-                
-                if confidence > 0.3:
-                    
+                if confidence > 0.2:
                     center_x = int(detection[0]*width)
                     center_y = int(detection[1]*height)
                     w = int(detection[2]*width)
@@ -69,7 +75,6 @@ def main():
         indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.2, 0.4)
 
         current_count = 0
-        
         if len(indexes)>0:
             
             for i in indexes.flatten():
@@ -99,28 +104,27 @@ def main():
                 #center_y1 = int(((y) + (h))/2)
                 x_mid = int((x + (x + w)) / 2)
                 y_mid = int((y + (y + h)) / 2)
-                
+                #if center_y1 <= int(3*height/6+height/20) and center_y1 >= int(3*height/6-height/20):
                 if y_mid >= 456 and y_mid <= 460:
-           
+                    print("Inside line...........")            
+                    #print("Inside count..........")
                     current_count += 1
 
-                    directory = r'/home/jfahim-ecl/Downloads/DFTT/Dataset/Wrok/imgzmq/dataset'
-                    
+                    directory = r'/home/ecl/Downloads/Limon/Object_Tracking/imgzmq/dataset'
                     for filename in os.listdir(directory):
-                        
                         if filename.endswith(".jpg") or filename.endswith(".png"):
                             a1 = os.path.join(directory, filename)
                             b = int(re.search(r'\d+', a1).group())
                             result.append(b)
-                            
                         else:
                             continue
                             
                         
                         b1 = max(result) + 1
+                        #count = 0
 
                         while(True):
-                            
+                            print("inside save picture.............")
                             count += 1
                             #image[box.ymin:box.ymax, box.xmin:box.xmax]
                             #snew_img = img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
@@ -135,14 +139,20 @@ def main():
                                 break
                 
 
-        cv2.putText(img, "Total Vehicle Count: " + str(current_count), (0,130), 0, 1, (0,0,255), 2)
+        #cv2.putText(img, "Total Vehicle Count: " + str(current_count), (0,130), 0, 1, (0,0,255), 2)
         cv2.imshow('Image', img)
         key = cv2.waitKey(1)
+
+        if cap.Q.qsize() < 2:
+            time.sleep(0.001)
+
+        fps.update()
         if key==27:
             break
 
-    cap.release()
+    #cap.release()
     cv2.destroyAllWindows()
+    cap.stop()
 
 
 if __name__ == '__main__':
