@@ -2,4 +2,4 @@ Download yolov4 weights from <a href="https://drive.google.com/file/d/1ySkHYqiW6
 
 run below file: 
 
-   python object_detect.py
+      python object_detect.py
